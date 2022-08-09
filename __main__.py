@@ -67,14 +67,7 @@ help_command = commands.DefaultHelpCommand(no_category = 'Commands')
 
 bot = commands.Bot(command_prefix='!', case_insensitive=True, help_command=help_command)
 
-
-# @bot.event
-# async def on_ready():
-    # checkTime()
-    
-
-            
-            
+#Used to get user ID for event(eventID to be used in future update)
 @bot.event
 async def on_raw_reaction_add(payload):
     channel = payload.channel_id
@@ -129,7 +122,7 @@ async def on_raw_reaction_add(payload):
             print('ERROR: Unable to save user roles to (user roles.json)')
         
                 
-##on_raw_reaction_remove deletes user from list of attendees    
+##on_raw_reaction_remove deletes user from event list    
 @bot.event
 async def on_raw_reaction_remove(payload):
     loop, x = 0,0
@@ -164,7 +157,7 @@ async def on_raw_reaction_remove(payload):
     else:
         print('REACTION REMOVED FROM WRONG CHANNEL\n')
 
-# command '!Server' will tag all who reacted to message.
+# command '!Server' will tag all who reacted to event message.
 @commands.has_any_role('Admin','Owner', 'Moderator')
 @bot.command(name="Server",hidden=True)
 async def serverAlliance(ctx):
@@ -194,11 +187,7 @@ async def serverAlliance(ctx):
     else:
         print('SERVER COMMAND used in wrong channel\n')
         
-    
-    
-
-
-
+#Sail command pings @Looking to Sail role once and then pings user who used command 3 more times to ensure they are checking the channel for updates(!dock command is used to cancel ping)
 @bot.command(name='Sail', brief='Used to find crewmates!',description='Sail command is used to search the sea\'s for crew mates. \n\nONLY AVAILABLE IN *SEA OF THE DAMNED*\n\n(USE "!dock" COMMAND TO CANCEL)')
 async def lookingToSail(ctx):
     
@@ -247,7 +236,7 @@ async def lookingToSail(ctx):
                 loop += 1
     else:
         print('"sail" command used in wrong channel')
-        
+#on_message event listens for !dock command and deletes it on use. Also delete user roles.json file when message is in event channel.        
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -268,17 +257,12 @@ async def on_message(message):
             print("ERROR: (user roles.json) Unable to be deleted.")
             
     await bot.process_commands(message)
-
+#on_command_error used to eliminate command errors on wrong command use.
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        print(error)
-
         return
-
-
-
-
+#shutdown command terminates bot connection and prints message to alert user it has shutdown
 @bot.command(name='quit', hidden=True)
 async def shutdown(ctx):
     if str(ctx.message.author.id) == Creator or str(ctx.message.author.id) == User0:
@@ -291,7 +275,7 @@ async def shutdown(ctx):
             pass
     else:
         print(f'{ctx.message.author} tried using QUIT command')
-    
+#info command displays version information and patch notes to user who called command    
 @bot.command(name='Info', brief='Provides bot information', description='The INFO command provides detailed information about bot version and creator.')
 async def info(ctx):
     if str(ctx.message.author.id) == Creator or str(ctx.message.author.id) == User0:
