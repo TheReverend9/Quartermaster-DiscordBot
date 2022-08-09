@@ -1,0 +1,9 @@
+Version 1.0.1
+
+Fixes:
+-Fixed issue where user reaction removal was not logged.
+-Fixed issue where user reaction add would be logged multiple times.
+Changes:
+-Changed server command to present information in a cleaner format
+-Changed .env file to better accomodate multiple channels.
+-Added Info command to view Bot Version and Creator.
