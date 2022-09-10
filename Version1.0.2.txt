@@ -1,0 +1,9 @@
+Version 1.0.2
+
+Fixes:
+-Fixed issue where user could react twice and remove once and be deleted from event list.
+Changes:
+-Complete over haul of how the On_raw_reaction_add/remove saves user reactions.
+-Added a new .json file to record user reactions.
+-Added Activity command to view user activity from a specific month.
+-Info command now has Version Sub Command built into it to show patch notes for previous versions.

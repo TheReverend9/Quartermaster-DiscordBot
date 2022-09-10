@@ -10,27 +10,25 @@ Created on Aug 6, 2022
 
 
 #BOT VERSION
-version = '1.0.1'
+version = '1.0.2'
 patches='Version' + version + '.txt'
 
 import asyncio
-import random
 import discord
 import json
 import os
 from dotenv import load_dotenv
-from Tokens import getTokens
 from datetime import date
-from discord.ext.commands import bot
 from discord.ext import commands
-from discord.utils import get
-from discord.ext.commands.core import after_invoke
 
 
 
-#filename initialization(filename format: yyyy-mm-dd)
-day = str(date.today())
-filename = day + ' Server List.json'
+
+#filename initialization
+month = date.today()
+month = month.strftime('%m')
+filename = 'Server List.json'
+currentFile = 'Current Event.json'
 
 load_dotenv()
 TOKEN=os.getenv("DISCORD_TOKEN")
@@ -46,13 +44,6 @@ intents = discord.Intents.all()
 intents.members = True
 client = discord.Client(intents=intents)
 
-#initialize lists
-eventID = []
-xboxList, pcList, undefinedList = [],[],[]
-userIDrole = []
-userRole = []
-
-
 try:
     with open(filename, "r") as file:
         eventID = json.load(file)
@@ -66,40 +57,47 @@ except:
 help_command = commands.DefaultHelpCommand(no_category = 'Commands')
 
 bot = commands.Bot(command_prefix='!', case_insensitive=True, help_command=help_command)
-
-#Used to get user ID for event(eventID to be used in future update)
+            
+#Used to get user ID for event(eventID to be used in future update)            
 @bot.event
 async def on_raw_reaction_add(payload):
+    event = []
+    eventID = []
+    userRole = []
+    try:
+        with open(currentFile, "r") as file:
+            eventID = json.load(file)
+    except Exception as e:
+        print(e)
+    try:
+        with open('user roles.json', "r") as file:
+            userRole = json.load(file)
+    except Exception as e:
+        print(e)
+
+    day = date.today()
+    day = day.strftime('%m')
     channel = payload.channel_id
     guild = bot.get_guild(int(payload.guild_id))
 
     userID = payload.user_id
-    
-    user =  await bot.fetch_user(userID)
-    # print(user)
+    user = await bot.fetch_user(userID)
+    user = str(user)
+
     xboxRole = discord.utils.get(guild.roles, name='XBOX')
     pcRole = discord.utils.get(guild.roles, name='PC')
-    # print(payload.member.roles)
     
     
     if str(channel) == GENERAL:
         userID = '<@' + str(userID) + '>'
-        
-        print()
-        try:
-
-            eventID.remove(userID)
-        except:
-            pass
-        
-        eventID.append(userID)
+        user = '<' + day + '>' + str(user)
+        eventID.append(user)
         
         try:
-            with open(filename, "w") as file:
+            with open(currentFile, "w") as file:
                 json.dump(eventID, file, indent=2)
-        except:
-            print('FILE ERROR\n')
-    
+        except Exception as e:
+            print(e)
 
         if xboxRole in payload.member.roles:
             
@@ -122,45 +120,89 @@ async def on_raw_reaction_add(payload):
             print('ERROR: Unable to save user roles to (user roles.json)')
         
                 
-##on_raw_reaction_remove deletes user from event list    
+#on_raw_reaction_remove deletes user from event list   
 @bot.event
 async def on_raw_reaction_remove(payload):
-    loop, x = 0,0
+    day = date.today()
+    day = day.strftime('%m')
     channel = payload.channel_id
     userID = payload.user_id
-    
-    
-    user = await bot.fetch_user(int(payload.user_id))
-    
+    user = await bot.fetch_user(userID)
+    user = str(user)
     userID = '<@' + str(userID) + '>'
+    user = '<' + day + '>' + str(user)
     
-    
-    if str(channel) == Channel1:
-        if userID in eventID:
-            try:
-                eventID.remove(userID)
-                with open(filename, "w") as file:
-                    json.dump(eventID, file, indent=2)
-                print('USER removed from LIST\n')
-            except:
-                print(f'ERROR: {filename} NOT OPENED ON REMOVE\n')
+    if str(channel) == Channel1 or str(channel) == GENERAL:
+        with open(currentFile, "r") as file:
+            eventID = json.load(file)
+        with open('user roles.json', "r") as file:
+            userRole = json.load(file)
+        try:
+            eventID.remove(user)
+        except Exception as e:
+            print(e)
+
+        try:
             for i in userRole:
                 print(i)
                 if i[0] == userID:
-                    loop += 1
                     userRole.remove(i)
-            try:
-                with open('user roles.json', "w") as file:
-                    json.dump(userRole, file, indent=2)
-            except:
-                print('ERROR: (user roles.json) NOT OPENED ON REMOVE\n')    
+                    break
+        except Exception as e:
+            print(e)
+        try:
+            with open('user roles.json', "w") as file:
+                json.dump(userRole, file, indent=2)
+        except Exception as e:
+            print(e)
+        try:
+            with open(currentFile, "w") as file:
+                json.dump(eventID, file, indent=2)
+        except Exception as e:
+            print(e)
     else:
         print('REACTION REMOVED FROM WRONG CHANNEL\n')
 
-# command '!Server' will tag all who reacted to event message.
+# command '!Server' will tag all who reacted to event message
 @commands.has_any_role('Admin','Owner', 'Moderator')
 @bot.command(name="Server",hidden=True)
-async def serverAlliance(ctx):
+async def server(ctx):
+    event = []
+    eventID = []
+    eventUsers = []
+
+    try:
+        with open('user roles.json', "r") as file:
+            userRole = json.load(file)
+    except Exception as e:
+        print(e)
+
+    try:
+        with open(filename, "r") as file:
+            eventID = json.load(file)
+    except Exception as e:
+        print(e)
+
+    try:
+        with open(currentFile, "r") as file:
+            eventUsers = json.load(file)
+    except Exception as e:
+        print(e)
+
+    for i in eventUsers:
+        if i in event:
+            pass
+        else:
+            eventID.append(i)
+            event.append(i)
+
+    event = []
+
+    for user in userRole:
+        if user in event:
+            continue
+        else:
+            event.append
     channel = ctx.channel.id
     members=''
     currentMembers=[]
@@ -184,9 +226,22 @@ async def serverAlliance(ctx):
         embed = discord.Embed(title="Console or PC", description=f"{xList}--Xbox\n{pList}--PC\n{uList}--Unknown",color=discord.Color.gold())
         await ctx.send(embed=embed)
         await ctx.channel.send(f'{members}\n\n**Thanks For Signing up!!**')
+        empty = []
+
+        try:
+            with open(filename, "w") as file:
+                json.dump(eventID, file, indent=2)
+        except Exception as e:
+            print(e)
+        try:
+            with open(currentFile, "w") as file:
+                json.dump(empty, file, indent=2)
+        except Exception as e:
+            print(e)
     else:
         print('SERVER COMMAND used in wrong channel\n')
-        
+
+
 #Sail command pings @Looking to Sail role once and then pings user who used command 3 more times to ensure they are checking the channel for updates(!dock command is used to cancel ping)
 @bot.command(name='Sail', brief='Used to find crewmates!',description='Sail command is used to search the sea\'s for crew mates. \n\nONLY AVAILABLE IN *SEA OF THE DAMNED*\n\n(USE "!dock" COMMAND TO CANCEL)')
 async def lookingToSail(ctx):
@@ -236,6 +291,7 @@ async def lookingToSail(ctx):
                 loop += 1
     else:
         print('"sail" command used in wrong channel')
+        
 #on_message event listens for !dock command and deletes it on use. Also delete user roles.json file when message is in event channel.        
 @bot.event
 async def on_message(message):
@@ -251,17 +307,27 @@ async def on_message(message):
         try:
             with open("user roles.json", "w") as file:
                 json.dump(empty, file, indent=2)
-            with open("user roles.json", "w") as file:
-                userRole = json.load(file)
-        except:
-            print("ERROR: (user roles.json) Unable to be deleted.")
-            
+        except Exception as e:
+            print(e)
+        try:
+            with open(currentFile, "w") as file:
+                json.dump(empty, file, indent=2)
+        except Exception as e:
+            print(e)
+
     await bot.process_commands(message)
+
 #on_command_error used to eliminate command errors on wrong command use.
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
+        print(error)
+
         return
+
+
+
+
 #shutdown command terminates bot connection and prints message to alert user it has shutdown
 @bot.command(name='quit', hidden=True)
 async def shutdown(ctx):
@@ -275,21 +341,97 @@ async def shutdown(ctx):
             pass
     else:
         print(f'{ctx.message.author} tried using QUIT command')
+    
 #info command displays version information and patch notes to user who called command    
 @bot.command(name='Info', brief='Provides bot information', description='The INFO command provides detailed information about bot version and creator.')
-async def info(ctx):
+async def info(ctx, arg=None):
     if str(ctx.message.author.id) == Creator or str(ctx.message.author.id) == User0:
-        try:
-            with open(patches, "r") as file:
-                patchNotes = file.read()
-        except:
-            print(f'ERROR: {patches} not found!')
+        await ctx.message.delete()
+        patchNotes = "Sorry Version File Not Found"
+        if arg == None:
+            try:
+                with open(patches, "r") as file:
+                    patchNotes = file.read()
+            except:
+                print(f'ERROR: {patches} not found!')
+        else:
+            versionFile = "Version" + arg + ".txt"
+            try:
+                with open(versionFile, "r") as file:
+                    patchNotes = file.read()
+            except:
+                await ctx.send(f'Sorry Version {arg} Not Found')
+                try:
+                    with open("versions.txt", "r") as file:
+                        patchNotes = file.read()
+                except:
+                    pass 
         embed=discord.Embed(title="Quartermaster", description=patchNotes, color=discord.Color.gold())
         await ctx.send(embed=embed)        
     
     else:
         embed=discord.Embed(title="Quartermaster", description=f"Bot version: {version}\nCreator: Reverend Studios", color=discord.Color.gold())
         await ctx.send(embed=embed)
-    await ctx.message.delete()
+    
 
+
+@bot.command(name='Activity', hidden=True)
+async def activity(ctx, arg=None):
+    await ctx.message.delete()
+    if str(ctx.message.author.id) == Creator or str(ctx.message.author.id) == User0:
+        print("Admin called !Activity Command")
+        attendance = []
+        if arg == None:
+            day = date.today()
+            day = day.strftime('%m')
+        else:
+            day = arg
+        try:
+            with open(filename, "r") as file:
+                attendance = json.load(file)
+        except Exception as e:
+            print(e)
+        activeList = []
+        userList = []
+        msgContent = ''
+
+        try:
+            for i in attendance:
+                if i in userList or day not in i:
+                    continue
+                else:
+                    userList.append(i)
+
+        except Exception as e:
+            print(e)
+        try:
+            for user in userList:
+                msg = [attendance.count(user), user]
+                activeList.append(msg)
+
+        except Exception as e:
+            print(e)
+        activeList.sort(reverse=True)
+        for i in activeList:
+            msgContent = msgContent + '**' + i[1] + '**' + ' = ' + str(i[0]) + '\n'
+        msgContent = msgContent.replace('<', '')
+        msgContent = msgContent.replace('>', '')
+        msgContent = msgContent.replace(day, '')
+        if msgContent == '':
+            msgContent = 'None'
+        try:
+            await ctx.send(f"Member Activity for month of: {day} {msgContent}")
+        except:
+            if arg == None:
+                await ctx.send(f"Sorry, No Users are recorded for the month of: {day}")
+            else:
+                await ctx.send(f"Sorry, No Users are recorded for the month of: {day}")
+
+
+@bot.command(name='Version',hidden=True)
+async def version(ctx, arg=None):
+    await ctx.message.delete()
+    if str(ctx.message.author.id) == Creator or str(ctx.message.author.id) == User0:
+        print("Admin called !Activity Command")
+        
 bot.run(TOKEN)
