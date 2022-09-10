@@ -428,10 +428,5 @@ async def activity(ctx, arg=None):
                 await ctx.send(f"Sorry, No Users are recorded for the month of: {day}")
 
 
-@bot.command(name='Version',hidden=True)
-async def version(ctx, arg=None):
-    await ctx.message.delete()
-    if str(ctx.message.author.id) == Creator or str(ctx.message.author.id) == User0:
-        print("Admin called !Activity Command")
-        
+
 bot.run(TOKEN)
