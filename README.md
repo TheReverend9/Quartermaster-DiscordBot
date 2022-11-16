@@ -1,5 +1,5 @@
 # Quartermaster-DiscordBot
-A multi-function discord bot for Sea No Evil on Discord using Discord.py 
+A multi-function discord bot on Discord using Discord.py 
 
 The Quartermaster bot aims to help relieve some of the pressure of running a discord server. Each function is custom designed for Sea No Evil on Discord.
 
