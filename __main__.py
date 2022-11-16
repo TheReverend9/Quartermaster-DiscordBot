@@ -5,7 +5,7 @@ Created on Aug 6, 2022
 
 @author: Reverend Studios
 '''
-#Quartermaster bot for Sea No Evil Discord Server
+#Quartermaster bot for Discord
 #Performs multiple functions to help with the daily hassles of running a discord server.
 
 
