@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+  #!/usr/bin/env python
 
 '''
 Created on Aug 6, 2022
+Updated: January 5, 2022
 
 @author: Reverend Studios
 '''
@@ -54,9 +55,7 @@ try:
         userRole = json.load(file)
 except:
     print('ERROR: No (user roles.json) file found')
-help_command = commands.DefaultHelpCommand(no_category = 'Commands')
-
-bot = commands.Bot(command_prefix='!', case_insensitive=True, help_command=help_command)
+bot = commands.Bot(case_insensitive=True)
             
 #Used to get user ID for event(eventID to be used in future update)            
 @bot.event
@@ -165,7 +164,7 @@ async def on_raw_reaction_remove(payload):
 
 # command '!Server' will tag all who reacted to event message
 @commands.has_any_role('Admin','Owner', 'Moderator')
-@bot.command(name="Server",hidden=True)
+@bot.slash_command(guild_ids=[GUILD])
 async def server(ctx):
     event = []
     eventID = []
@@ -220,8 +219,6 @@ async def server(ctx):
             members= members +''+i[0]
         currentMembers.append(i[0])
 
-    await ctx.message.delete()
-    
     if str(channel) == GENERAL:
         embed = discord.Embed(title="Console or PC", description=f"{xList}--Xbox\n{pList}--PC\n{uList}--Unknown",color=discord.Color.gold())
         await ctx.send(embed=embed)
@@ -243,14 +240,13 @@ async def server(ctx):
 
 
 #Sail command pings @Looking to Sail role once and then pings user who used command 3 more times to ensure they are checking the channel for updates(!dock command is used to cancel ping)
-@bot.command(name='Sail', brief='Used to find crewmates!',description='Sail command is used to search the sea\'s for crew mates. \n\nONLY AVAILABLE IN *SEA OF THE DAMNED*\n\n(USE "!dock" COMMAND TO CANCEL)')
-async def lookingToSail(ctx):
+@bot.slash_command(guild_ids=[GUILD] ,description='Sail command is used to search out fellow crewmates for the seas. /n/n (/dock to cancel)')
+async def sail(ctx):
     
-    user = ctx.message.author
+    user = ctx.author
     channel = ctx.channel.id
     role = discord.utils.get(user.guild.roles, name='Looking to Sail')
     
-    await ctx.message.delete() 
        
     if str(channel) == GENERAL:
         msg = ''
@@ -260,7 +256,7 @@ async def lookingToSail(ctx):
             if loop == 0:
                 await ctx.send(f'{user.mention} is now {role.mention}!!\n\n**(USE \'!dock\' COMMAND TO STOP RECIEVING THIS MESSAGE)**')
                 try:
-                    msg = await bot.wait_for('message', check=lambda message: user == ctx.message.author, timeout=5)
+                    msg = await bot.wait_for('message', check=lambda message: user == ctx.author, timeout=5)
                     
                 except asyncio.TimeoutError:
                     print('No user response')
@@ -274,7 +270,7 @@ async def lookingToSail(ctx):
             elif loop <= 3:
                 await ctx.send(f'{user.mention} is still Looking for crewmates!!\n\n**(USE  "!dock" COMMAND TO STOP RECIEVING THIS MESSAGE)**')
                 try:
-                    msg = await bot.wait_for('message', check=lambda message: user == ctx.message.author, timeout=5)
+                    msg = await bot.wait_for('message', check=lambda message: user == ctx.author, timeout=5)
                     
                 except asyncio.TimeoutError:
                     print('No user response')
@@ -329,24 +325,22 @@ async def on_command_error(ctx, error):
 
 
 #shutdown command terminates bot connection and prints message to alert user it has shutdown
-@bot.command(name='quit', hidden=True)
-async def shutdown(ctx):
-    if str(ctx.message.author.id) == Creator or str(ctx.message.author.id) == User0:
-        await ctx.message.delete()
+@bot.slash_command(guild_ids=[GUILD], hidden=True)
+async def quit(ctx):
+    if str(ctx.author.id) == Creator or str(ctx.author.id) == User0:
         await ctx.send("ATTENTION: I have been murdered.")
-        print('Quartermaster has been murdered by', ctx.message.author)
+        print('Quartermaster has been murdered by', ctx.author)
         try:
             await bot.close()
         except:
             pass
     else:
-        print(f'{ctx.message.author} tried using QUIT command')
+        print(f'{ctx.author} tried using QUIT command')
     
 #info command displays version information and patch notes to user who called command    
-@bot.command(name='Info', brief='Provides bot information', description='The INFO command provides detailed information about bot version and creator.')
+@bot.slash_command(name='info', brief='Provides bot information', description='The INFO command provides detailed information about bot version and creator.')
 async def info(ctx, arg=None):
-    if str(ctx.message.author.id) == Creator or str(ctx.message.author.id) == User0:
-        await ctx.message.delete()
+    if str(ctx.author.id) == Creator or str(ctx.author.id) == User0:
         patchNotes = "Sorry Version File Not Found"
         if arg == None:
             try:
@@ -372,14 +366,11 @@ async def info(ctx, arg=None):
     else:
         embed=discord.Embed(title="Quartermaster", description=f"Bot version: {version}\nCreator: Reverend Studios", color=discord.Color.gold())
         await ctx.send(embed=embed)
-    
 
-
-@bot.command(name='Activity', hidden=True)
+@bot.slash_command(name='activity')
 async def activity(ctx, arg=None):
-    await ctx.message.delete()
-    if str(ctx.message.author.id) == Creator or str(ctx.message.author.id) == User0:
-        print("Admin called !Activity Command")
+    if str(ctx.author.id) == Creator or str(ctx.author.id) == User0:
+        print("Admin called /Activity Command")
         attendance = []
         if arg == None:
             day = date.today()
@@ -426,7 +417,5 @@ async def activity(ctx, arg=None):
                 await ctx.send(f"Sorry, No Users are recorded for the month of: {day}")
             else:
                 await ctx.send(f"Sorry, No Users are recorded for the month of: {day}")
-
-
-
+    
 bot.run(TOKEN)
