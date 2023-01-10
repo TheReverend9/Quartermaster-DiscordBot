@@ -5,10 +5,10 @@ The Quartermaster bot aims to help relieve some of the pressure of running a dis
 
 Command List:
 
-The !Sail command is used to alert Discord members that a user is looking for a group to play with.
+The /Sail command is used to alert Discord members that a user is looking for a group to play with.
 
-The !Server command is used to ping all members who signed up for an event
+The /Server command is used to ping all members who signed up for an event
 
-The !Quit command is used to shutdown a bot from discord server.(Only useable by certain members)
+The /Quit command is used to shutdown a bot from discord server.(Only useable by certain members)
 
-The !Info command is used to see bot version and patch notes.
+The /Info command is used to see bot version and patch notes.
