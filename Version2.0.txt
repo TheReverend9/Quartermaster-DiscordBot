@@ -1,3 +1,0 @@
-Version 2.0
-
--Updated bot to use new Slash Commands feature to conform with Discord policy update.
