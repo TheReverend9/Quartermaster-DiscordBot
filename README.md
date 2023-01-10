@@ -1,5 +1,5 @@
 # Quartermaster-DiscordBot
-A multi-function discord bot on Discord using Discord.py 
+A multi-function discord bot on Discord using PYCORD. 
 
 The Quartermaster bot aims to help relieve some of the pressure of running a discord server.
 
